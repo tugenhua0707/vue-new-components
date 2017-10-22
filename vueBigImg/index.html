@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>演示Vue</title>
+    <script src="./js/vue.js"></script>
+    <style>
+      * {margin: 0; padding:0;}
+      .tb-image-dialog {
+        width: 100%;
+        height: 100%;
+      }
+      .image-dialog-trigger {
+        margin: 0;
+        padding: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+      .image-dialog-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        padding: 0;
+        background: none;
+        border: none;
+        transition: 300ms ease-out;
+        -webkit-transition: 300ms ease-out;
+        outline: none;
+        cursor: pointer;
+      }
+      .image-dialog-close::before, .image-dialog-close::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-top: -0.5px;
+        margin-left: -20px;
+        width: 40px;
+        height: 1px;
+        background-color: #000;
+      }
+      .image-dialog-close::before {
+        transform: rotate(45deg);
+        -webkit-transform: rotate(45deg);
+      }
+      .image-dialog-close::after {
+        transform: rotate(135deg);
+        -webkit-transform: rotate(135deg);
+      }
+      .image-dialog-close:hover {
+        transform: rotate(270deg);
+        -webkit-transform: rotate(270deg);
+      }
+      .image-dialog-background {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        padding: 80px 40px;
+        background-color: rgba(255, 255, 255, 0.9);
+        text-align: center;
+        overflow: auto;
+      }
+      .image-dialog-animate {
+        display: none;
+        position: absolute;
+        transform-origin: left top;
+        -webkit-transform-origin: left top;
+      }
+      .image-dialog-animate.loading {
+        display: block;
+      }
+      .dialog-enter-active, .dialog-leave-active {
+        -webkit-transition: background-color 300ms ease-out;
+        transition: background-color 300ms ease-out;
+      }
+      .dialog-enter, .dialog-leave-to {
+        background-color: rgba(255, 255, 255, 0);
+      }
+      .dialog-enter-active .image-dialog-animate, .dialog-leave-active .image-dialog-animate {
+        display: block;
+        -webkit-transition: -webkit-transform 300ms cubic-bezier(1, 0, 0.7, 1);
+        transition: -webkit-transform 300ms cubic-bezier(1, 0, 0.7, 1);
+        transition: transform 300ms cubic-bezier(1, 0, 0.7, 1);
+        transition: transform 300ms cubic-bezier(1, 0, 0.7, 1), -webkit-transform 300ms cubic-bezier(1, 0, 0.7, 1);
+      }
+      .dialog-enter-active .image-dialog-full, .dialog-leave-active .image-dialog-full {
+        visibility: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h3>vue实现点击图片放大效果</h3>
+      <tb-image-dialog thumb='./images/small.jpg' :full-width="800" :full-height="600"></tb-image-dialog>
+    </div>
+    <script id="tb-image-dialog" type="text/x-template">
+      <div class="tb-image-dialog">
+        <button class="image-dialog-trigger" type="button" @click="showDialog">
+          <img class="image-dialog-thumb" ref="thumb" :src="thumb" />
+        </button>
+        <transition name="dialog" @enter="enter" @leave="leave">
+          <div class="image-dialog-background" v-show="appearedDialog" ref="dialog">
+            <button class="image-dialog-close" type="button" @click="hideDialog"></button>
+            <img class="image-dialog-animate" ref="animate" :class="{ loading: !loaded }" :src="thumb" />
+            <img class="image-dialog-full" ref="full" :width="fullWidth" :height="fullHeight" @load="onLoadFull">
+          </div>
+        </transition>
+      </div>
+    </script>
+    <script>
+      Vue.component('tb-image-dialog', {
+        template: '#tb-image-dialog',
+        props: {
+          thumb: String,
+          fullWidth: [Number, String],
+          fullHeight: [Number, String]
+        },
+        data() {
+          return {
+            // 是否已经加载完
+            loaded: false,
+            // 是否显示弹窗
+            appearedDialog: false
+          }
+        },
+        methods: {
+          showDialog() {
+            this.appearedDialog = true;
+          },
+          hideDialog() {
+            this.appearedDialog = false;
+          },
+          enter() {
+            this.animateImage(this.$refs.thumb, this.$refs.full);
+          },
+          leave() {
+            this.animateImage(this.$refs.full, this.$refs.thumb);
+          },
+          onLoadFull() {
+            this.loaded = true;
+          },
+          animateImage(sourceEl, targetEl) {
+            const start = this.getBoundElem(sourceEl);
+            this.setStart(start);
+
+            this.$nextTick(() => {
+              const target = this.getBoundElem(targetEl);
+              this.setDestination(start, {
+                top: target.top,
+                left: target.left,
+                width: target.width || this.fullWidth,
+                height: target.height || this.fullHeight
+              })
+            });
+          },
+          getBoundElem(el) {
+            const bound = el.getBoundingClientRect();
+            const dialog = this.$refs.dialog;
+            return {
+              top: bound.top + dialog.scrollTop,
+              left: bound.left + dialog.scrollLeft,
+              width: bound.width,
+              height: bound.height
+            }
+          },
+          setStart(start) {
+            const el = this.$refs.animate;
+            el.style.left = start.left + 'px';
+            el.style.top = start.top + 'px';
+            el.style.width = start.width + 'px';
+            el.style.height = start.height + 'px';
+            el.style.transitionDuration = '0s';
+            el.style.transform = '';
+          },
+          setDestination(start, end) {
+            const el = this.$refs.animate;
+            el.style.transitionDuration = '';
+            const translate = `translate(${end.left - start.left}px, ${end.top - start.top}px)`;
+            const scale = `scale(${end.width / start.width}, ${end.height / start.height})`;
+            el.style.transform = `${translate} ${scale}`;
+          }
+        }
+      });
+      new Vue({
+        el: '#app'
+      });
+    </script>
+  </body>
+</html>
