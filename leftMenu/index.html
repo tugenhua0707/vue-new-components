@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>演示Vue</title>
+    <script src="./libs/vue.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+      .tb-nav-menu.toggled {
+        padding-left: 220px;
+      }
+      .tb-nav-menu {
+        -moz-transition: all 0.5s ease;
+        -o-transition: all 0.5s ease;
+        -webkit-transition: all 0.5s ease;
+        padding-left: 0;
+        transition: all 0.5s ease;
+      }
+      .tb-nav-menu .overlay {
+        position: fixed;
+        display: none;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 1;
+      }
+      .tb-nav-menu.toggled .sidebar-wrapper {
+        width: 220px;
+      }
+      .sidebar-wrapper {
+        -moz-transition: all 0.5s ease;
+        -o-transition: all 0.5s ease;
+        -webkit-transition: all 0.5s ease;
+        padding-left: 0;
+        transition: all 0.5s ease;
+        height: 100%;
+        left: 220px;
+        margin-left: -220px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        width: 0;
+        z-index: 1000;
+      }
+      .sidebar-nav {
+        list-style: none;
+        position: absolute;
+        top: 0;
+        border: 1px solid #ccc;
+        width: 220px;
+        background-color: red;
+      }
+      .sidebar-nav li {
+        display: inline-block;
+        line-height: 20px;
+        position: relative;
+        width: 100%;
+      }
+      .sidebar-nav li a{
+        color: #fff;
+      }
+      .testBtn {
+        position: absolute;
+        left: 500px;
+        top: 100px;
+      }
+      .testBtn button {
+        background-color: #2196f3;
+        padding: 8px;
+        border: 1px solid #2196f3;
+        color: #fff;
+        border-radius: 4px;
+        -webkit-border-radius: 4px;
+        cursor: pointer;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <tb-nav-menu></tb-nav-menu>
+    </div>
+    <script id="tb-nav-menu" type="text/x-template">
+      <div>
+        <div class="testBtn" style="position: absolute;left: 500px;top: 100px;">
+          <button type="button" @click="showFunc()">点击展开</button>
+          <button type="button" @click="hideFunc()">点击收缩</button>
+        </div>
+        <div 
+          class="tb-nav-menu"
+          :class="{'toggled': isshow}"
+        >
+          <div class="overlay" v-show="isshow"></div>
+          <div class="sidebar-wrapper">
+            <ul class="sidebar-nav">
+              <li>
+                <a href="#">菜单一</a>
+              </li>
+              <li>
+                <a href="#">菜单二</a>
+              </li>
+              <li>
+                <a href="#">菜单三</a>
+              </li>
+              <li>
+                <a href="#">菜单四</a>
+              </li>
+              <li>
+                <a href="#">菜单五</a>
+              </li>
+              <li>
+                <a href="#">菜单六</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </script>
+    <script>
+      Vue.component('tb-nav-menu', {
+        template: '#tb-nav-menu',
+        props: {
+
+        },
+        data() {
+          return {
+            isshow: false
+          }
+        },
+        methods: {
+          showFunc() {
+            this.isshow = true;
+          },
+          hideFunc() {
+            this.isshow = false;
+          }
+        }
+      });
+      new Vue({
+        el: '#app'
+      });
+    </script>
+  </body>
+</html>
